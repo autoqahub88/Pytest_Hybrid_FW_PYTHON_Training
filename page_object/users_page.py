@@ -36,7 +36,6 @@ class UsersPage:
         current_function_name = fh.get_function_name()
 
         try:
-
             self.ei.wait_for_page_timeout(3)
             self.ei.wait_for_page_load()
 
