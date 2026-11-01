@@ -9,7 +9,6 @@ logger = log.setup_logger("test_reports")
 @pytest.mark.usefixtures("page")
 class TestReports:
 
-
     def test_create_user_with_mandatory_fields(self,page):
         """
         *********************************************************************
@@ -126,10 +125,3 @@ class TestReports:
             error_msg = f"Failed Test Case: {current_test_name} | Reason: {str(exc)}"
             logger.exception(error_msg)
             raise RuntimeError(error_msg) from exc
-
-
-
-
-
-
-

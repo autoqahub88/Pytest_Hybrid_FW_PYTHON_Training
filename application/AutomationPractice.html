@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Registration Page</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --primary: #2b3a55;
+    --primary-hover: #1c2740;
+    --accent: #4a6fa5;
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border-color: #cbd5e1;
+    --danger: #ef4444;
+    --danger-hover: #dc2626;
+    --radius: 8px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    --transition: all 0.2s ease;
+  }
+
+  body { 
+    font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+    max-width: 900px; 
+    margin: 40px auto; 
+    background: var(--bg-main); 
+    color: var(--text-main); 
+    line-height: 1.5;
+    padding: 0 20px;
+  }
+
+  .header-container { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 24px; 
+  }
+
+  h1 { 
+    text-align: center; 
+    color: var(--primary); 
+    margin: 0; 
+    font-size: 1.75rem;
+    font-weight: 700;
+  }
+
+  fieldset { 
+    margin-bottom: 20px; 
+    border: 1px solid var(--border-color); 
+    border-radius: var(--radius); 
+    padding: 18px 22px; 
+    background: var(--bg-card); 
+    box-shadow: var(--shadow);
+  }
+
+  legend { 
+    font-weight: 700; 
+    color: var(--primary); 
+    padding: 0 8px; 
+    font-size: 0.95rem;
+  }
+
+  label { 
+    margin-right: 14px; 
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-main);
+  }
+
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 10px; 
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  th, td { 
+    border: 1px solid #e2e8f0; 
+    padding: 10px 12px; 
+    text-align: left; 
+    font-size: 0.9rem;
+  }
+
+  th { 
+    background: var(--primary); 
+    color: #fff; 
+    font-weight: 600;
+  }
+
+  tbody tr:hover {
+    background-color: #f1f5f9;
+  }
+
+  select, input[type=text], input[type=password], input[type=number] { 
+    padding: 8px 12px; 
+    width: 100%; 
+    box-sizing: border-box; 
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: #fff;
+    transition: var(--transition);
+  }
+
+  select:focus, input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(43, 58, 85, 0.12);
+  }
+
+  iframe { 
+    width: 100%; 
+    height: 120px; 
+    border: 1px solid var(--border-color); 
+    border-radius: 6px; 
+  }
+
+  button { 
+    padding: 9px 18px; 
+    margin: 6px 6px 0 0; 
+    border: none; 
+    border-radius: 6px; 
+    background: var(--primary); 
+    color: #fff; 
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer; 
+    transition: var(--transition);
+  }
+
+  button:hover { 
+    background: var(--primary-hover); 
+    transform: translateY(-1px);
+  }
+
+  .logout-btn { 
+    background: var(--danger); 
+    margin: 0; 
+  }
+  .logout-btn:hover { 
+    background: var(--danger-hover); 
+  }
+
+  #downloadArea { display: none; margin-top: 14px; }
+  .row { display: flex; gap: 20px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 220px; }
+
+  /* Login Screen Styles */
+  #loginContainer {
+    max-width: 380px;
+    margin: 100px auto;
+    background: var(--bg-card);
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-color);
+  }
+  #loginContainer h2 { text-align: center; color: var(--primary); margin-top: 0; margin-bottom: 20px; }
+  .login-field { margin-bottom: 16px; }
+  .login-field label { display: block; margin-bottom: 6px; font-weight: 600; }
+  #errorMessage { color: var(--danger); background: #fef2f2; border: 1px solid #fecaca; padding: 10px; border-radius: 6px; margin-bottom: 16px; display: none; text-align: center; font-size: 0.85rem; }
+  #loginBtn { width: 100%; padding: 11px; font-size: 1rem; background: var(--primary); color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+  #loginBtn:hover { background: var(--primary-hover); }
+
+  /* Hover Navigation Menu */
+  .navbar { background-color: var(--primary); border-radius: var(--radius); overflow: visible; margin-bottom: 20px; box-shadow: var(--shadow); }
+  .navbar ul { list-style-type: none; margin: 0; padding: 0; display: flex; }
+  .navbar li { position: relative; }
+  .navbar a { display: block; color: white; padding: 12px 20px; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: var(--transition); }
+  .navbar li:hover > a { background-color: var(--primary-hover); }
+  .dropdown-content { display: none; position: absolute; background-color: #fff; min-width: 200px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); z-index: 10; border-radius: var(--radius); border: 1px solid #e2e8f0; overflow: visible; }
+  .dropdown-content > a:first-child, .dropdown-content > .dropdown-submenu:first-child > a { border-radius: var(--radius) var(--radius) 0 0; }
+  .dropdown-content > a:last-child { border-radius: 0 0 var(--radius) var(--radius); }
+  .dropdown-content a { color: var(--text-main); padding: 10px 16px; font-weight: 400; }
+  .dropdown-content a:hover { background-color: #f8fafc; color: var(--primary); }
+  .navbar li:hover .dropdown-content { display: block; }
+
+  /* Sub-dropdown styles */
+  .dropdown-submenu { position: relative; }
+  .dropdown-submenu .submenu-content {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background-color: #fff;
+    min-width: 180px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    border-radius: var(--radius);
+    border: 1px solid #e2e8f0;
+    z-index: 20;
+  }
+  .dropdown-submenu:hover .submenu-content { display: block; }
+  .dropdown-submenu > a { display: flex; justify-content: space-between; align-items: center; }
+
+  /* Drag and Drop */
+  #dragSource { width: 130px; padding: 14px; background: var(--accent); color: #fff; text-align: center; border-radius: 6px; cursor: grab; user-select: none; font-weight: 600; box-shadow: var(--shadow); }
+  #dropZone { width: 100%; min-height: 70px; border: 2px dashed var(--border-color); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: var(--text-muted); margin-top: 12px; box-sizing: border-box; background: #fafafa; transition: var(--transition); }
+  #dropZone.dragover { background: #eff6ff; border-color: var(--primary); color: var(--primary); }
+
+  /* Custom File Dropzone */
+  .custom-file-zone { width: 100%; padding: 22px; border: 2px dashed var(--accent); border-radius: var(--radius); background: #f0f7ff; text-align: center; color: var(--primary); cursor: pointer; box-sizing: border-box; font-weight: 500; transition: var(--transition); }
+  .custom-file-zone:hover { background: #e0f0fe; }
+
+  /* Toggle switch */
+  .switch { position: relative; display: inline-block; width: 48px; height: 26px; vertical-align: middle; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider-toggle { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 26px; }
+  .slider-toggle:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+  input:checked + .slider-toggle { background-color: var(--primary); }
+  input:checked + .slider-toggle:before { transform: translateX(22px); }
+
+  /* Tooltip */
+  .tooltip-wrap { position: relative; display: inline-block; border-bottom: 1px dotted var(--text-main); cursor: help; font-weight: 500; }
+  .tooltip-wrap .tooltip-text { visibility: hidden; opacity: 0; transition: opacity .2s; width: 180px; background: #1e293b; color: #fff; text-align: center; border-radius: 6px; padding: 8px; position: absolute; z-index: 1; bottom: 135%; left: 50%; margin-left: -90px; font-size: 0.8rem; box-shadow: var(--shadow); }
+  .tooltip-wrap:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); align-items: center; justify-content: center; z-index: 100; }
+  .modal-box { background: var(--bg-card); padding: 28px; border-radius: 12px; width: 320px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+  .modal-box h3 { color: var(--primary); margin-top: 0; }
+
+  /* Toast Notification */
+  #toastNotification { visibility: hidden; min-width: 260px; background-color: var(--primary); color: #fff; text-align: center; border-radius: var(--radius); padding: 14px; position: fixed; z-index: 300; right: 24px; bottom: 30px; font-size: 0.9rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+  #toastNotification.show { visibility: visible; animation: fadein 0.4s, fadeout 0.4s 2.6s; }
+  @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+  @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+  /* Accordion */
+  .accordion-header { background: #f1f5f9; padding: 12px 16px; cursor: pointer; border-radius: var(--radius); font-weight: 600; color: var(--primary); transition: var(--transition); }
+  .accordion-header:hover { background: #e2e8f0; }
+  .accordion-body { max-height: 0; overflow: hidden; transition: max-height .3s ease; padding: 0 16px; background: #f8fafc; border-radius: 0 0 var(--radius) var(--radius); }
+  .accordion-body.open { max-height: 220px; padding: 14px 16px; }
+
+  /* Tabs */
+  .tab-buttons { display: flex; gap: 4px; }
+  .tab-buttons button { background: #f1f5f9; color: var(--text-main); border-radius: 6px 6px 0 0; margin: 0; }
+  .tab-buttons button.active { background: var(--primary); color: #fff; }
+  .tab-panel { display: none; padding: 16px; border: 1px solid var(--border-color); border-radius: 0 6px 6px 6px; background: #fff; }
+  .tab-panel.active { display: block; }
+
+  /* Progress bar */
+  progress { width: 100%; height: 14px; border-radius: 7px; overflow: hidden; border: none; background: #e2e8f0; }
+  progress::-webkit-progress-bar { background: #e2e8f0; border-radius: 7px; }
+  progress::-webkit-progress-value { background: var(--primary); border-radius: 7px; }
+
+  /* Star rating */
+  .stars span { font-size: 28px; cursor: pointer; color: #cbd5e1; transition: color 0.15s; }
+  .stars span.filled { color: #f59e0b; }
+
+  /* Context menu */
+  #contextMenu { display: none; position: absolute; background: #fff; border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 200; overflow: hidden; }
+  #contextMenu div { padding: 10px 18px; cursor: pointer; font-size: 0.9rem; transition: var(--transition); }
+  #contextMenu div:hover { background: #f1f5f9; color: var(--primary); }
+
+  /* Spinner */
+  .spinner { display: none; width: 16px; height: 16px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.7s linear infinite; margin-left: 8px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { background-color: var(--primary-hover); }
+
+  /* Calendar Widget */
+  .calendar-box { border: 1px solid var(--border-color); border-radius: var(--radius); padding: 12px; background: #fff; width: 310px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); }
+  .calendar-header { display: flex; gap: 8px; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+  .calendar-weekday { font-weight: 600; font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 2px 0; }
+  .calendar-day-btn { padding: 8px 0; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer; background: #fff; font-size: 0.85rem; width: 100%; text-align: center; transition: var(--transition); }
+  .calendar-day-btn:hover { background: #f1f5f9; border-color: var(--primary); }
+  .calendar-day-btn.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+</style>
+</head>
+<body>
+
+<!-- Login Container -->
+<div id="loginContainer">
+  <img src="TCS_Logo.svg.webp" width="100%" alt="TCS company logo" style="margin-bottom: 10px;">
+  <h2>Login</h2>
+  <div id="errorMessage">Invalid Username or Password!</div>
+  <form id="loginForm" onsubmit="handleLogin(event)">
+    <div class="login-field">
+      <label for="username">Username</label>
+      <input type="text" id="username" aria-label="UserName_Aria_Label" placeholder="Enter username" required>
+    </div>
+    <div class="login-field">
+      <label for="password">Password</label>
+      <input type="password" data-testid="Password" id="password" placeholder="Enter password" required>
+    </div>
+    <button type="submit" id="loginBtn">Login</button>
+  </form>
+</div>
+
+<!-- Main Application Content (Hidden by default) -->
+<div id="mainContent" style="display: none;">
+
+  <!-- Hover Navigation Bar (Updated with Nested Automation Testing Sub-menus) -->
+  <nav class="navbar">
+    <ul>
+      <li><a href="#home">Home</a></li>
+      <li>
+        <a href="#services">Services &#9662;</a>
+        <div class="dropdown-content">
+          <div class="dropdown-submenu">
+            <a href="#automation" onclick="showToast('Selected: Automation Testing')">Automation Testing &#9656;</a>
+            <div class="submenu-content">
+              <a href="#uft" onclick="showToast('Selected: UFT')">UFT</a>
+              <a href="#selenium" onclick="showToast('Selected: Selenium')">Selenium</a>
+              <a href="#playwright" onclick="showToast('Selected: Playwright')">Playwright</a>
+              <a href="#testcomplete" onclick="showToast('Selected: Test Complete')">Test Complete</a>
+              <a href="#katalon" onclick="showToast('Selected: Katalon')">Katalon</a>
+            </div>
+          </div>
+          <div class="dropdown-submenu">
+            <a href="#performance" onclick="showToast('Selected: Performance Testing')">Performance Testing &#9656;</a>
+            <div class="submenu-content">
+              <a href="#loadrunner" onclick="showToast('Selected: Load Runner')">Load Runner</a>
+              <a href="#jmeter" onclick="showToast('Selected: JMeter')">JMeter</a>
+              <a href="#neoload" onclick="showToast('Selected: NeoLoad')">NeoLoad</a>
+            </div>
+          </div>
+          <a href="#security" onclick="showToast('Selected: Security Testing')">Security Testing</a>
+        </div>
+      </li>
+      <li>
+        <a href="#courses">Resources &#9662;</a>
+        <div class="dropdown-content">
+          <a href="#docs" onclick="showToast('Selected: Documentation')">Documentation</a>
+          <a href="#tutorials" onclick="showToast('Selected: Video Tutorials')">Tutorials</a>
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="header-container">
+    <h1>Registration Page</h1>
+    <button type="button" class="logout-btn" onclick="handleLogout()">Logout</button>
+  </div>
+
+  <form id="regForm">
+
+    <!-- personal details -->
+    <fieldset>
+	  <legend>Personal Details</legend>
+      <label for="fullName">Full Name</label>
+      <input type="text" id="fullName" placeholder="Enter your full name">
+      <div class="row" style="margin-top: 12px;">
+        <div>
+          <label for="firstName">First Name</label>
+          <input type="text" id="firstName" placeholder="First name" aria-label="firstName" oninput="updateTooltip()">
+        </div>
+		<div>
+          <label for="middleName">Middle Name</label>
+          <input type="text" id="middleName" title="Middle Name" placeholder="Middle name" oninput="updateTooltip()">
+        </div>
+        <div>
+          <label for="lastName">Last Name</label>
+          <input type="text" id="lastName" placeholder="Last name" alt="Last Name" oninput="updateTooltip()">
+        </div>
+		<div>
+          <label for="mobilenumber">Mobile #</label>
+          <input type="text" id="mobilenumber" placeholder="Mobile #" oninput="updateTooltip()">
+        </div>
+		<div>
+          <label for="emailid">Email Id</label>
+          <input type="text" id="emailid" placeholder="Email Id" oninput="updateTooltip()">
+        </div>
+		<div>
+          <label for="address">Address</label>
+          <input type="text" id="address" placeholder="Address" oninput="updateTooltip()">
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Cascading / Dependent Dropdowns -->
+    <fieldset>
+      <legend>Cascading / Dependent Dropdowns</legend>
+      <div class="row">
+        <div>
+          <label for="countrySelect">Select Country</label>
+          <select id="countrySelect" onchange="updateStates()">
+            <option value="">-- Select Country --</option>
+            <option value="USA">USA</option>
+            <option value="India">India</option>
+          </select>
+        </div>
+        <div>
+          <label for="stateSelect">Select State</label>
+          <select id="stateSelect" onchange="updateCities()" disabled>
+            <option value="">-- Select State First --</option>
+          </select>
+        </div>
+        <div>
+          <label for="citySelect">Select City</label>
+          <select id="citySelect" disabled>
+            <option value="">-- Select City --</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Multiple Frames & Nested iFrame -->
+    <fieldset>
+      <legend>iFrames (Parallel &amp; Nested iFrame scenarios)</legend>
+      <div class="row">
+        <div>
+          <label>Frame Alpha</label>
+          <iframe id="frameAlpha" srcdoc="
+            <html><body style='margin:0;padding:8px;font-family:Arial,sans-serif;background:#fafafa;'>
+              <label style='font-size:12px;font-weight:bold;'>Alpha Field:</label>
+              <input type='text' id='frameAlphaText' placeholder='Text inside Frame Alpha' style='width:95%;padding:4px;margin-bottom:6px;font-size:12px;'/>
+              <select id='frameAlphaSelect' style='width:95%;padding:4px;font-size:12px;'>
+                <option value=''>-- Select Option --</option>
+                <option value='Alpha Opt 1'>Alpha Option 1</option>
+                <option value='Alpha Opt 2'>Alpha Option 2</option>
+              </select>
+            </body></html>">
+          </iframe>
+        </div>
+        <div>
+          <label>Nested iFrame Container</label>
+          <iframe id="frameOuter" srcdoc="
+            <html><body style='margin:0;padding:8px;font-family:Arial,sans-serif;background:#edf2f7;'>
+              <p style='margin:0 0 4px 0;font-size:12px;font-weight:bold;'>Outer Frame</p>
+              <iframe id='frameInner' style='height:60px;' srcdoc=&quot;
+                <html><body style='margin:0;padding:6px;background:#fff;'>
+                  <label style='font-size:11px;font-weight:bold;'>Inner Frame Input:</label>
+                  <input type='text' id='innerInput' placeholder='Inside inner frame' style='width:90%;padding:3px;font-size:11px;'/>
+                </body></html>&quot;>
+              </iframe>
+            </body></html>">
+          </iframe>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Drag and Drop -->
+    <fieldset>
+      <legend>Drag and Drop</legend>
+      <div id="dragSource" draggable="true">Drag Me</div>
+      <div id="dropZone">Drop Here</div>
+      <p id="dragDropStatus" style="font-style:italic; font-size: 0.85rem; color: var(--text-muted);"></p>
+    </fieldset>
+
+    <!-- Gender checkboxes -->
+    <fieldset>
+      <legend>Gender</legend>
+      <label><input type="checkbox" id="male" name="gender" value="Male"> Male</label>
+      <label><input type="checkbox" id="female" name="gender" value="Female"> Female</label>
+    </fieldset>
+
+    <!-- Qualification radio buttons -->
+    <fieldset>
+      <legend>Qualification</legend>
+      <label><input type="radio" name="qualification" value="Graduation"> Graduation</label>
+      <label><input type="radio" name="qualification" value="Post Graduation"> Post Graduation</label>
+    </fieldset>
+
+    <div class="row">
+      <!-- District dropdown -->
+      <div>
+        <fieldset>
+          <legend>Karnataka District</legend>
+          <select id="district" style="margin-bottom: 10px;">
+            <option value="">-- Select District --</option>
+            <option>Bagalkot</option><option>Ballari</option><option>Belagavi</option>
+            <option>Bengaluru Rural</option><option>Bengaluru Urban</option><option>Bidar</option>
+            <option>Chamarajanagar</option><option>Chikballapur</option><option>Chikkamagaluru</option>
+            <option>Chitradurga</option><option>Dakshina Kannada</option><option>Davanagere</option>
+            <option>Dharwad</option><option>Gadag</option><option>Hassan</option>
+            <option>Haveri</option><option>Hospet</option><option>Kalaburagi</option><option>Kodagu</option>
+            <option>Kolar</option><option>Koppal</option><option>Mandya</option>
+            <option>Mysuru</option><option>Raichur</option><option>Ramanagara</option>
+            <option>Shivamogga</option><option>Tumakuru</option><option>Udupi</option>
+            <option>Uttara Kannada</option><option>Vijayapura</option><option>Yadgir</option>
+          </select>
+          <button type="button" onclick="openNewTab()">Open in New Tab</button>
+          <button type="button" onclick="openNewWindow()">Open in New Window</button>
+        </fieldset>
+      </div>
+
+      <!-- Age in Shadow DOM -->
+      <div>
+        <fieldset>
+          <legend>Age (inside Shadow DOM)</legend>
+          <div id="shadowHost"></div>
+        </fieldset>
+      </div>
+    </div>
+
+    <!-- Courses table with Live Search & Pagination -->
+    <fieldset>
+      <legend>Courses (with Filter Search &amp; Sorting)</legend>
+      <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <label for="tableSearch">Filter Table Rows:</label>
+          <input type="text" id="tableSearch" placeholder="Type to filter courses..." onkeyup="filterCourseTable()" style="display:inline-block; width:auto; min-width:200px;">
+        </div>
+        <div>
+          <button type="button" onclick="generateCourseRows(3)">3 Rows</button>
+          <button type="button" onclick="generateCourseRows(5)">5 Rows</button>
+          <button type="button" onclick="generateCourseRows(10)">10 Rows</button>
+        </div>
+      </div>
+      <table id="courseTable">
+        <thead>
+          <tr>
+            <th class="sortable" onclick="sortCourseTable(0)">Course &#8645;</th>
+            <th>Link</th>
+            <th>Joining</th>
+            <th>Select (checkbox)</th>
+            <th>Primary Choice (radio)</th>
+            <th>Comments</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Computer Science</td>
+            <td><a href="https://en.wikipedia.org/wiki/Computer_science" target="_blank">Details</a></td>
+            <td>
+              <select class="joiningSelect">
+                <option value="">-- Select --</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </td>
+            <td><input type="checkbox" class="courseChk" value="Computer Science"></td>
+            <td><input type="radio" name="primaryCourse" value="Computer Science"></td>
+            <td>
+              <input type="text" class="courseComment1" placeholder="Comment 1" style="margin-bottom:4px;">
+              <input type="text" class="courseComment2" placeholder="Comment 2">
+            </td>
+          </tr>
+          <tr>
+            <td>Mechanical Engineering</td>
+            <td><a href="https://en.wikipedia.org/wiki/Mechanical_engineering" target="_blank">Details</a></td>
+            <td>
+              <select class="joiningSelect">
+                <option value="">-- Select --</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </td>
+            <td><input type="checkbox" class="courseChk" value="Mechanical Engineering"></td>
+            <td><input type="radio" name="primaryCourse" value="Mechanical Engineering"></td>
+            <td>
+              <input type="text" class="courseComment1" placeholder="Comment 1" style="margin-bottom:4px;">
+              <input type="text" class="courseComment2" placeholder="Comment 2">
+            </td>
+          </tr>
+          <tr>
+            <td>Commerce</td>
+            <td><a href="https://en.wikipedia.org/wiki/Commerce" target="_blank">Details</a></td>
+            <td>
+              <select class="joiningSelect">
+                <option value="">-- Select --</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </td>
+            <td><input type="checkbox" class="courseChk" value="Commerce"></td>
+            <td><input type="radio" name="primaryCourse" value="Commerce"></td>
+            <td>
+              <input type="text" class="courseComment1" placeholder="Comment 1" style="margin-bottom:4px;">
+              <input type="text" class="courseComment2" placeholder="Comment 2">
+            </td>
+          </tr>
+          <tr>
+            <td>Business Administration</td>
+            <td><a href="https://en.wikipedia.org/wiki/Business_administration" target="_blank">Details</a></td>
+            <td>
+              <select class="joiningSelect">
+                <option value="">-- Select --</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </td>
+            <td><input type="checkbox" class="courseChk" value="Business Administration"></td>
+            <td><input type="radio" name="primaryCourse" value="Business Administration"></td>
+            <td>
+              <input type="text" class="courseComment1" placeholder="Comment 1" style="margin-bottom:4px;">
+              <input type="text" class="courseComment2" placeholder="Comment 2">
+            </td>
+          </tr>
+          <tr>
+            <td>Arts</td>
+            <td><a href="https://en.wikipedia.org/wiki/Liberal_arts_education" target="_blank">Details</a></td>
+            <td>
+              <select class="joiningSelect">
+                <option value="">-- Select --</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </td>
+            <td><input type="checkbox" class="courseChk" value="Arts"></td>
+            <td><input type="radio" name="primaryCourse" value="Arts"></td>
+            <td>
+              <input type="text" class="courseComment1" placeholder="Comment 1" style="margin-bottom:4px;">
+              <input type="text" class="courseComment2" placeholder="Comment 2">
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </fieldset>
+	
+    <!-- Standard File upload -->
+    <fieldset>
+      <legend>Upload File</legend>
+      <input type="file" id="fileUpload" accept=".txt,.csv,.pdf,.xlsx" onchange="handleFileUpload(this)">
+      <p id="fileUploadDisplay" style="margin-top:8px; font-weight:600; color:var(--primary);"></p>
+    </fieldset>
+
+    <!-- Dialogs & Alerts -->
+    <fieldset>
+      <legend>Dialogs &amp; Alerts</legend>
+      <button type="button" onclick="showJSAlert()">Trigger JS Alert</button>
+      <button type="button" onclick="showAlertBox()">Show Alert</button>
+      <button type="button" onclick="showPromptBox()">Show Prompt</button>
+      <button type="button" id="confirmBtn" onclick="showConfirmBox()">Show Confirm</button>
+      <button type="button" onclick="showToast('This is an automated toast alert notification!')">Trigger Toast Alert</button>
+      <span id="promptResult" style="margin-left:10px; font-style:italic; font-size:0.85rem;"></span>
+      <span id="confirmResult" style="margin-left:10px; font-style:italic; font-size:0.85rem;"></span>
+    </fieldset>
+
+    <!-- Additional Automation Elements -->
+    <fieldset>
+      <legend>Additional Elements (for automation practice)</legend>
+
+      <div class="row">
+        <div>
+          <label>Double-Click Action</label>
+          <div id="doubleClickBtn" ondblclick="handleDoubleClick()" style="padding:12px; background:#f1f5f9; border:1px solid var(--border-color); text-align:center; border-radius:6px; cursor:pointer; user-select:none; font-weight:500;">
+            Double-click here to reveal text
+          </div>
+          <p id="doubleClickResult" style="color:var(--primary); font-weight:600; margin-top:6px; font-size:0.85rem;"></p>
+        </div>
+        <div>
+          <label>Clipboard Copy Action</label>
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="promoCode" value="AUTOMATION2026" readonly>
+            <button type="button" onclick="copyToClipboard()" style="margin:0; white-space:nowrap;">Copy Code</button>
+          </div>
+          <p id="copyStatus" style="font-size:0.85rem; color:#16a34a; margin-top:6px; font-weight:500;"></p>
+        </div>
+      </div>
+
+      <!-- Date Picker Calendar Widget -->
+      <div class="row" style="margin-top:16px;">
+        <div>
+          <label for="calendarDate">Calendar Picker Widget</label>
+          <input type="text" id="calendarInput" placeholder="Click to choose date" readonly onclick="toggleCalendar()" style="cursor:pointer; background:#fff;">
+          <div class="calendar-box" id="calendarWidget" style="display:none; position:absolute; z-index:50; margin-top:4px;">
+            <div class="calendar-header">
+              <select id="calendarMonthSelect" onchange="changeMonthYear()" style="padding:4px; font-size:12px;"></select>
+              <select id="calendarYearSelect" onchange="changeMonthYear()" style="padding:4px; font-size:12px; width:80px;"></select>
+            </div>
+            <div class="calendar-days" id="calendarDays" style="margin-top:8px;"></div>
+          </div>
+        </div>
+        <div>
+          <label for="dob">Date of Birth (DD-MM-YYYY Text Box)</label>
+          <input type="text" id="dob" placeholder="DD-MM-YYYY">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:16px;">
+        <div>
+          <label for="country">Autocomplete / Datalist - Country</label>
+          <input type="text" id="country" list="countryList" placeholder="Start typing a country">
+          <datalist id="countryList">
+            <option value="India">India</option>
+            <option value="United States">United States</option>
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="Australia">Australia</option>
+            <option value="Germany">Germany</option>
+            <option value="Japan">Japan</option>
+          </datalist>
+        </div>
+        <div>
+          <label for="satisfaction">Range Slider (Satisfaction)</label>
+          <input type="range" id="satisfaction" min="0" max="100" value="50" oninput="syncSliderFromRange()" onchange="syncSliderFromRange()">
+          <input type="number" id="satisfactionText" min="0" max="100" value="50" style="margin-top:6px;" oninput="syncSliderFromText()" onchange="syncSliderFromText()">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:16px;">
+        <div>
+          <label>Favourite Color (RGB - RCB Red)</label>
+          <div style="display:flex; gap:6px;">
+            <input type="number" id="colorR" min="0" max="255" value="236" placeholder="R" oninput="updateColorPreview()">
+            <input type="number" id="colorG" min="0" max="255" value="28" placeholder="G" oninput="updateColorPreview()">
+            <input type="number" id="colorB" min="0" max="255" value="36" placeholder="B" oninput="updateColorPreview()">
+          </div>
+          <div id="colorPreview" style="width:100%; height:24px; margin-top:8px; border-radius:6px; border:1px solid var(--border-color); background:rgb(236, 28, 36);"></div>
+        </div>
+        <div>
+          <label for="hobbies">Multi-select Listbox (Hobbies)</label>
+          <select id="hobbies" multiple size="4" data-selected="" onchange="updateHobbiesSelection()">
+            <option>Reading</option>
+            <option>Sports</option>
+            <option>Music</option>
+            <option>Travel</option>
+            <option>Gaming</option>
+          </select>
+          <p id="hobbiesSelected" style="margin:6px 0 0 0; font-size:0.85rem; font-style:italic; color:var(--primary);">Selected Hobbies: None</p>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:16px; align-items:center;">
+        <div>
+          <label>Newsletter Toggle Switch</label><br>
+          <div style="margin-top: 6px;">
+            <label class="switch">
+              <input type="checkbox" id="newsletterToggle">
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <label class="tooltip-wrap">Hover to see entered name
+            <span class="tooltip-text" id="tooltipText">Enter First and Last Name above to see it here.</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:16px;">
+        <div>
+          <label>Rate Us</label><br>
+          <div class="stars" id="starRating" style="margin-top: 4px;">
+            <span data-val="1">&#9733;</span><span data-val="2">&#9733;</span><span data-val="3">&#9733;</span><span data-val="4">&#9733;</span><span data-val="5">&#9733;</span>
+          </div>
+        </div>
+        <div>
+          <label for="disabledField">Disabled Field</label>
+          <input type="text" id="disabledField" value="Cannot edit this" disabled style="background: #f1f5f9;">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:16px;">
+        <div>
+          <label for="readonlyField">Readonly Field</label>
+          <input type="text" id="readonlyField" value="Read only value" readonly style="background: #f8fafc;">
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <label style="display: block; margin-bottom: 6px;">Profile Completion Progress</label>
+        <progress id="progressBar" value="40" max="100"></progress>
+      </div>
+
+      <div style="margin-top:16px;">
+        <div class="accordion-header" onclick="toggleAccordion()">Terms &amp; Conditions (Accordion - click to expand)</div>
+        <div class="accordion-body" id="accordionBody">
+          <p style="margin: 0; font-size: 0.9rem;">By registering, you agree to our terms of service and privacy policy. This content is inside a collapsible accordion panel, commonly used for automation "expand/collapse" test cases.</p>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <div class="tab-buttons">
+          <button type="button" class="active" onclick="switchTab('tab1', this)">Profile</button>
+          <button type="button" onclick="switchTab('tab2', this)">Preferences</button>
+          <button type="button" onclick="switchTab('tab3', this)">Security</button>
+        </div>
+        <div class="tab-panel active" id="tab1">Profile tab content goes here.</div>
+        <div class="tab-panel" id="tab2">Preferences tab content goes here.</div>
+        <div class="tab-panel" id="tab3">Security tab content goes here.</div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <button type="button" onclick="openModal()">Open Modal Dialog</button>
+        <button type="button" onclick="simulateLoading()">Submit with Loading Spinner<span class="spinner" id="spinnerEl"></span></button>
+      </div>
+
+      <div style="margin-top:16px; padding: 12px; background: #f8fafc; border: 1px dashed var(--border-color); border-radius: 6px;" oncontextmenu="showContextMenu(event)">
+        <p id="rightclick" style="margin:0; font-size: 0.85rem; color: var(--text-muted);"><i>Right-click anywhere in this box to open a custom context menu.</i></p>
+      </div>
+
+      <p id="hiddenElement" style="display:none; margin-top:16px; background:#eff6ff; padding:12px; border-radius:6px; border: 1px solid #bfdbfe; font-size: 0.9rem; color: var(--primary);">
+        This element is hidden by default - useful for testing "wait for visibility" automation scenarios.
+      </p>
+      <button type="button" style="margin-top: 12px;" onclick="document.getElementById('hiddenElement').style.display='block'">Reveal Hidden Element</button>
+    </fieldset>
+
+    <!-- Modal markup -->
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal-box">
+        <h3>Sample Modal Dialog</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">This is a modal window, commonly used to test dialog handling in automation.</p>
+        <button type="button" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+
+    <!-- Context menu markup -->
+    <div id="contextMenu">
+      <div onclick="alert('Edit clicked'); hideContextMenu()">Edit</div>
+      <div onclick="alert('Delete clicked'); hideContextMenu()">Delete</div>
+      <div onclick="alert('Share clicked'); hideContextMenu()">Share</div>
+    </div>
+
+    <!-- Toast Markup -->
+    <div id="toastNotification">Notification Alert</div>
+
+    <!-- Save -->
+    <fieldset>
+      <legend>Save &amp; Download</legend>
+      <button type="button" onclick="saveData()">Save</button>
+      <div id="downloadArea">
+        <p style="font-weight: 500; font-size: 0.9rem;">Data saved! Choose a format to download:</p>
+        <button type="button" onclick="downloadTXT()">Download TXT</button>
+        <button type="button" onclick="downloadXLSX()">Download XLSX</button>
+      </div>
+    </fieldset>
+
+  </form>
+</div>
+
+<script>
+  // ---------- Login & Logout Handlers ----------
+  function handleLogin(event) {
+    event.preventDefault();
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+    const errorMsg = document.getElementById('errorMessage');
+
+    if (user === 'admin' && pass === 'admin') {
+      errorMsg.style.display = 'none';
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+      updateColorPreview();
+      initCalendar();
+    } else {
+      errorMsg.style.display = 'block';
+    }
+  }
+
+  function handleLogout() {
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('mainContent').style.display = 'none';
+    document.getElementById('loginContainer').style.display = 'block';
+  }
+
+  // ---------- Cascading Dropdowns ----------
+  const stateData = {
+    USA: ["California", "Texas", "New York"],
+    India: ["Karnataka", "Maharashtra", "Tamil Nadu"]
+  };
+  const cityData = {
+    California: ["Los Angeles", "San Francisco"],
+    Texas: ["Houston", "Austin"],
+    "New York": ["New York City", "Buffalo"],
+    Karnataka: ["Bengaluru", "Mysuru"],
+    Maharashtra: ["Mumbai", "Pune"],
+    "Tamil Nadu": ["Chennai", "Coimbatore"]
+  };
+
+  function updateStates() {
+    const country = document.getElementById("countrySelect").value;
+    const stateSelect = document.getElementById("stateSelect");
+    const citySelect = document.getElementById("citySelect");
+    
+    stateSelect.innerHTML = '<option value="">-- Select State --</option>';
+    citySelect.innerHTML = '<option value="">-- Select City --</option>';
+    citySelect.disabled = true;
+
+    if (country && stateData[country]) {
+      stateSelect.disabled = false;
+      stateData[country].forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s; opt.textContent = s;
+        stateSelect.appendChild(opt);
+      });
+    } else {
+      stateSelect.disabled = true;
+    }
+  }
+
+  function updateCities() {
+    const state = document.getElementById("stateSelect").value;
+    const citySelect = document.getElementById("citySelect");
+    
+    citySelect.innerHTML = '<option value="">-- Select City --</option>';
+
+    if (state && cityData[state]) {
+      citySelect.disabled = false;
+      cityData[state].forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c; opt.textContent = c;
+        citySelect.appendChild(opt);
+      });
+    } else {
+      citySelect.disabled = true;
+    }
+  }
+
+  // ---------- Double Click Action ----------
+  function handleDoubleClick() {
+    document.getElementById("doubleClickResult").textContent = "Action Verified: Element was double-clicked successfully!";
+  }
+
+  // ---------- Copy to Clipboard ----------
+  function copyToClipboard() {
+    const text = document.getElementById("promoCode").value;
+    navigator.clipboard.writeText(text).then(() => {
+      document.getElementById("copyStatus").textContent = "Code copied to clipboard!";
+      setTimeout(() => { document.getElementById("copyStatus").textContent = ""; }, 3000);
+    });
+  }
+
+  // ---------- Toast Notification ----------
+  function showToast(msg) {
+    const toast = document.getElementById("toastNotification");
+    toast.textContent = msg;
+    toast.className = "show";
+    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+  }
+
+  // ---------- Calendar Widget ----------
+  let currentCalDate = new Date(2026, 8, 20);
+
+  function initCalendar() {
+    const monthSelect = document.getElementById("calendarMonthSelect");
+    const yearSelect = document.getElementById("calendarYearSelect");
+    if (!monthSelect || !yearSelect) return;
+
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    
+    monthSelect.innerHTML = "";
+    months.forEach((m, idx) => {
+      const opt = document.createElement("option");
+      opt.value = idx;
+      opt.textContent = m;
+      monthSelect.appendChild(opt);
+    });
+
+    yearSelect.innerHTML = "";
+    for (let y = 2020; y <= 2035; y++) {
+      const opt = document.createElement("option");
+      opt.value = y;
+      opt.textContent = y;
+      yearSelect.appendChild(opt);
+    }
+
+    renderCalendar();
+  }
+
+  function renderCalendar() {
+    const monthSelect = document.getElementById("calendarMonthSelect");
+    const yearSelect = document.getElementById("calendarYearSelect");
+    const daysContainer = document.getElementById("calendarDays");
+    if (!monthSelect || !yearSelect || !daysContainer) return;
+
+    monthSelect.value = currentCalDate.getMonth();
+    yearSelect.value = currentCalDate.getFullYear();
+
+    daysContainer.innerHTML = "";
+
+    const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    weekdays.forEach(wd => {
+      const div = document.createElement("div");
+      div.className = "calendar-weekday";
+      div.textContent = wd;
+      daysContainer.appendChild(div);
+    });
+
+    const year = currentCalDate.getFullYear();
+    const month = currentCalDate.getMonth();
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+
+    for (let i = 0; i < firstDayIndex; i++) {
+      const emptyDiv = document.createElement("div");
+      daysContainer.appendChild(emptyDiv);
+    }
+
+    for (let i = 1; i <= totalDays; i++) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "calendar-day-btn";
+      btn.textContent = i;
+      btn.onclick = () => {
+        const selected = `${i.toString().padStart(2, '0')}-${(month + 1).toString().padStart(2, '0')}-${year}`;
+        document.getElementById("calendarInput").value = selected;
+        document.getElementById("calendarWidget").style.display = "none";
+      };
+      daysContainer.appendChild(btn);
+    }
+  }
+
+  function changeMonthYear() {
+    const monthSelect = document.getElementById("calendarMonthSelect");
+    const yearSelect = document.getElementById("calendarYearSelect");
+    if (monthSelect && yearSelect) {
+      currentCalDate.setMonth(parseInt(monthSelect.value, 10));
+      currentCalDate.setFullYear(parseInt(yearSelect.value, 10));
+      renderCalendar();
+    }
+  }
+
+  function toggleCalendar() {
+    const cal = document.getElementById("calendarWidget");
+    if (cal.style.display === "none" || !cal.style.display) {
+      cal.style.display = "block";
+      initCalendar();
+    } else {
+      cal.style.display = "none";
+    }
+  }
+
+  // ---------- Live Table Filter & Row Generation ----------
+  function filterCourseTable() {
+    const input = document.getElementById("tableSearch");
+    const filter = input.value.toLowerCase();
+    const rows = document.querySelectorAll("#courseTable tbody tr");
+
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(filter) ? "" : "none";
+    });
+  }
+
+  const allCourses = [
+    { name: "Computer Science", link: "https://en.wikipedia.org/wiki/Computer_science" },
+    { name: "Mechanical Engineering", link: "https://en.wikipedia.org/wiki/Mechanical_engineering" },
+    { name: "Commerce", link: "https://en.wikipedia.org/wiki/Commerce" },
+    { name: "Business Administration", link: "https://en.wikipedia.org/wiki/Business_administration" },
+    { name: "Arts", link: "https://en.wikipedia.org/wiki/Liberal_arts_education" },
+    { name: "Physics", link: "https://en.wikipedia.org/wiki/Physics" },
+    { name: "Mathematics", link: "https://en.wikipedia.org/wiki/Mathematics" },
+    { name: "Chemistry", link: "https://en.wikipedia.org/wiki/Chemistry" },
+    { name: "Biology", link: "https://en.wikipedia.org/wiki/Biology" },
+    { name: "Economics", link: "https://en.wikipedia.org/wiki/Economics" }
+  ];
+
+  function generateCourseRows(count) {
+    const tbody = document.querySelector("#courseTable tbody");
+    tbody.innerHTML = ""; // Clear existing rows to ensure unique course names populate the table
+    
+    const countToGenerate = Math.min(count, allCourses.length);
+    for (let i = 0; i < countToGenerate; i++) {
+      const course = allCourses[i];
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${course.name}</td>
+        <td><a href="${course.link}" target="_blank">Details</a></td>
+        <td>
+          <select class="joiningSelect">
+            <option value="">-- Select --</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </td>
+        <td><input type="checkbox" class="courseChk" value="${course.name}"></td>
+        <td><input type="radio" name="primaryCourse" value="${course.name}"></td>
+        <td>
+          <input type="text" class="courseComment1" placeholder="Comment 1" style="margin-bottom:4px;">
+          <input type="text" class="courseComment2" placeholder="Comment 2">
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  // ---------- Shadow DOM for Age ----------
+  const shadowHost = document.getElementById('shadowHost');
+  const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
+  shadowRoot.innerHTML = `
+    <style>
+      input { padding:8px 12px; width:100%; box-sizing:border-box; font-size:14px; border:1px solid #cbd5e1; border-radius:6px; outline: none; }
+      input:focus { border-color: #2b3a55; box-shadow: 0 0 0 3px rgba(43, 58, 85, 0.12); }
+    </style>
+    <input type="number" id="ageInput" placeholder="Enter your age" min="1" max="120">
+  `;
+
+  // ---------- File Upload Handlers ----------
+  function handleFileUpload(input) {
+    const displayEl = document.getElementById('fileUploadDisplay');
+    if (!displayEl) return;
+
+    if (input.files.length) {
+      const fileName = input.files[0].name;
+      const allowedExtensions = ['txt', 'csv', 'pdf', 'xlsx'];
+      const fileExtension = fileName.split('.').pop().toLowerCase();
+
+      if (!allowedExtensions.includes(fileExtension)) {
+        displayEl.style.color = '#ef4444';
+        displayEl.textContent = 'Invalid file type! Allowed: .txt, .csv, .pdf, .xlsx.';
+        input.value = '';
+        return;
+      }
+
+      displayEl.style.color = '#2b3a55';
+      displayEl.textContent = `file_name = "${fileName}"`;
+    } else {
+      displayEl.textContent = '';
+    }
+  }
+
+  let customUploadedFileName = "No custom file attached";
+
+  // ---------- JS Alerts ----------
+  function showJSAlert() { alert("JavaScript Alert Triggered!"); }
+  function showAlertBox() { alert('This is an alert box!'); }
+  function showPromptBox() {
+    const result = prompt('Please enter a comment:');
+    document.getElementById('promptResult').textContent = result ? `You said: ${result}` : '';
+  }
+
+  function showConfirmBox() {
+    const result = confirm('Do you want to proceed?');
+    document.getElementById('confirmResult').textContent = result ? 'You pressed OK' : 'You pressed Cancel';
+  }
+
+  // ---------- Hobbies: selected item(s) property ----------
+  // Custom properties on the <select id="hobbies"> element, usable from automation / console:
+  //   document.getElementById('hobbies').selectedItems  -> array of all selected option texts
+  //   document.getElementById('hobbies').selectedItem   -> first selected option text ('' if none)
+  //   document.getElementById('hobbies').selectedValue  -> comma-separated string of selected texts
+  const hobbiesSelect = document.getElementById('hobbies');
+  Object.defineProperty(hobbiesSelect, 'selectedItems', {
+    get() { return Array.from(this.selectedOptions).map(o => o.text); }
+  });
+  Object.defineProperty(hobbiesSelect, 'selectedItem', {
+    get() { return this.selectedItems[0] || ''; }
+  });
+  Object.defineProperty(hobbiesSelect, 'selectedValue', {
+    get() { return this.selectedItems.join(', '); }
+  });
+
+  function updateHobbiesSelection() {
+    const items = hobbiesSelect.selectedItems;
+    // Keep an HTML attribute in sync too, so locators like [data-selected="Music"] work
+    hobbiesSelect.setAttribute('data-selected', items.join(', '));
+    document.getElementById('hobbiesSelected').textContent =
+      'Selected Hobbies: ' + (items.length ? items.join(', ') : 'None');
+  }
+
+  // ---------- Range Slider ----------
+  function syncSliderFromRange() {
+    document.getElementById('satisfactionText').value = document.getElementById('satisfaction').value;
+  }
+  function syncSliderFromText() {
+    let val = parseInt(document.getElementById('satisfactionText').value, 10);
+    if (isNaN(val)) val = 0;
+    val = Math.max(0, Math.min(100, val));
+    document.getElementById('satisfaction').value = val;
+    document.getElementById('satisfactionText').value = val;
+  }
+
+  // ---------- RGB Color Preview ----------
+  function updateColorPreview() {
+    let r = parseInt(document.getElementById('colorR').value, 10) || 0;
+    let g = parseInt(document.getElementById('colorG').value, 10) || 0;
+    let b = parseInt(document.getElementById('colorB').value, 10) || 0;
+    document.getElementById('colorPreview').style.background = `rgb(${r}, ${g}, ${b})`;
+  }
+
+  function updateTooltip() {
+    const first = document.getElementById('firstName').value.trim();
+    const last = document.getElementById('lastName').value.trim();
+    const full = `${first} ${last}`.trim();
+    document.getElementById('tooltipText').textContent = full ? full : 'Enter First and Last Name above to see it here.';
+  }
+
+  // ---------- Drag and Drop ----------
+  const dragSource = document.getElementById('dragSource');
+  const dropZone = document.getElementById('dropZone');
+
+  dragSource.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('text/plain', 'dragged');
+  });
+
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    dropZone.textContent = 'Dropped!';
+    document.getElementById('dragDropStatus').textContent = 'Drag and drop completed successfully.';
+  });
+
+  // ---------- Star Rating ----------
+  let starRatingValue = 0;
+  document.querySelectorAll('#starRating span').forEach(star => {
+    star.addEventListener('click', () => {
+      starRatingValue = parseInt(star.getAttribute('data-val'), 10);
+      document.querySelectorAll('#starRating span').forEach(s => {
+        s.classList.toggle('filled', parseInt(s.getAttribute('data-val'), 10) <= starRatingValue);
+      });
+    });
+  });
+
+  function toggleAccordion() { document.getElementById('accordionBody').classList.toggle('open'); }
+
+  function switchTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function openModal() { document.getElementById('modalOverlay').style.display = 'flex'; }
+  function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+
+  function simulateLoading() {
+    const spinner = document.getElementById('spinnerEl');
+    spinner.style.display = 'inline-block';
+    setTimeout(() => { spinner.style.display = 'none'; alert('Submitted!'); }, 1500);
+  }
+
+  function showContextMenu(e) {
+    e.preventDefault();
+    const menu = document.getElementById('contextMenu');
+    menu.style.top = e.pageY + 'px';
+    menu.style.left = e.pageX + 'px';
+    menu.style.display = 'block';
+  }
+  function hideContextMenu() { document.getElementById('contextMenu').style.display = 'none'; }
+  document.addEventListener('click', hideContextMenu);
+
+  let courseSortAsc = false;
+  function sortCourseTable(colIndex) {
+    const table = document.getElementById('courseTable');
+    const tbody = table.tBodies[0];
+    const ths = table.querySelectorAll('thead th');
+    const targetTh = ths[colIndex];
+    const rows = Array.from(tbody.rows);
+    
+    courseSortAsc = !courseSortAsc;
+    targetTh.setAttribute('sort', courseSortAsc ? 'asc' : 'desc');
+
+    rows.sort((a, b) => {
+      const aText = a.cells[colIndex].textContent.trim();
+      const bText = b.cells[colIndex].textContent.trim();
+      return courseSortAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  }
+
+  function getDistrict() { return document.getElementById('district').value; }
+
+  const talukData = {
+    "Bagalkot": ["Bagalkot", "Badami", "Hungund", "Ilkal", "Jamkhandi", "Mudhol", "Rabkavi Banhatti", "Guledgudda"],
+    "Ballari": ["Ballari", "Kampli", "Kurugodu", "Siruguppa", "Sandur"],
+    "Belagavi": ["Belagavi", "Athani", "Bailhongal", "Chikkodi", "Gokak", "Hukkeri", "Khanapur", "Kagwad", "Mudalgi", "Nippani", "Raybag", "Ramdurg", "Saundatti", "Yargatti"],
+    "Bengaluru Rural": ["Devanahalli", "Doddaballapura", "Hoskote", "Nelamangala"],
+    "Bengaluru Urban": ["Bengaluru North", "Bengaluru South", "Bengaluru East", "Anekal", "Yelahanka"],
+    "Bidar": ["Bidar", "Bhalki", "Basavakalyan", "Humnabad", "Aurad", "Hulsoor", "Chitguppa"],
+    "Chamarajanagar": ["Chamarajanagar", "Gundlupet", "Kollegal", "Yelandur", "Hanur"],
+    "Chikballapur": ["Chikballapur", "Bagepalli", "Chintamani", "Gauribidanur", "Sidlaghatta", "Gudibanda"],
+    "Chikkamagaluru": ["Chikkamagaluru", "Kadur", "Koppa", "Mudigere", "Narasimharajapura", "Sringeri", "Tarikere", "Ajjampura"],
+    "Chitradurga": ["Chitradurga", "Challakere", "Hiriyur", "Holalkere", "Hosadurga", "Molakalmuru"],
+    "Dakshina Kannada": ["Mangaluru", "Bantwal", "Belthangady", "Puttur", "Sullia", "Moodabidri", "Kadaba"],
+    "Davanagere": ["Davanagere", "Harihar", "Honnali", "Jagamalur", "Nyamathi"],
+    "Dharwad": ["Dharwad", "Hubballi (Urban)", "Hubballi (Rural)", "Kalghatgi", "Kundgol", "Navalgund", "Alnavar"],
+    "Gadag": ["Gadag", "Gajendragad", "Lakshmeshwar", "Mundargi", "Nargund", "Ronn", "Shirhatti"],
+    "Hassan": ["Hassan", "Alur", "Arkalgud", "Arsikere", "Belur", "Channarayapatna", "Holenarasipura", "Sakleshpur"],
+    "Haveri": ["Haveri", "Byadgi", "Hangal", "Hirekerur", "Ranebennur", "Rattihalli", "Savanur", "Shiggaon"],
+    "Hospet": ["Hospet", "Hagaribommanahalli", "Kotturu", "Hoovina Hadagali"],
+    "Kalaburagi": ["Kalaburagi", "Aland", "Afzalpur", "Chincholi", "Chitapur", "Jewargi", "Sedam", "Kamalapur", "Yadrami", "Kalgi"],
+    "Kodagu": ["Madikeri", "Somwarpet", "Virajpet", "Ponnampet", "Kushalnagar"],
+    "Kolar": ["Kolar", "Bangarapet", "Malur", "Mulbagal", "Srinivaspur", "KGF"],
+    "Koppal": ["Koppal", "Gangavathi", "Kushtagi", "Yelbarga", "Kuknoor", "Karatagi"],
+    "Mandya": ["Mandya", "Maddur", "Malavalli", "Nagarnagere", "Pandavapura", "Srirangapatna", "KR Pet"],
+    "Mysuru": ["Mysuru", "Hunsur", "KR Nagar", "Nanjangud", "HD Kote", "Piriyapatna", "T Narasipura", "Saragur", "Saligrama"],
+    "Raichur": ["Raichur", "Devadurga", "Lingsugur", "Manvi", "Sindhanur", "Maski", "Sirwar"],
+    "Ramanagara": ["Ramanagara", "Channapatna", "Kanakapura", "Magadi"],
+    "Shivamogga": ["Shivamogga", "Bhadravathi", "Hosanagara", "Shikaripura", "Soraba", "Thirthahalli", "Sagara"],
+    "Tumakuru": ["Tumakuru", "Chikkanayakanahalli", "Gubbi", "Koratagere", "Kunigal", "Madhugiri", "Pavagada", "Sira", "Tiptur", "Turuvekere"],
+    "Udupi": ["Udupi", "Brahmavar", "Byndoor", "Karkala", "Kaup", "Kundapura"],
+    "Uttara Kannada": ["Karwar", "Ankola", "Bhatkal", "Haliyal", "Honnavar", "Joida", "Kumta", "Mundgod", "Siddapur", "Sirsi", "Yellapur"],
+    "Vijayapura": ["Vijayapura", "Indi", "Muddebihal", "Sindagi", "Basavana Bagewadi", "Babaleshwar", "Chadchan", "Devar Hippargi", "Nidagundi", "Tikota"],
+    "Yadgir": ["Yadgir", "Shahapur", "Shorapur", "Gurmatkal", "Hunsagi", "Kembhavi"]
+  };
+
+  function districtHTML(district) {
+    const taluks = talukData[district] || [];
+    let talukOptions = '<option value="">-- Select Taluk --</option>';
+    taluks.forEach(t => {
+      const isSelected = (district && t.toLowerCase() === district.toLowerCase()) ? "selected" : "";
+      talukOptions += `<option value="${t}" ${isSelected}>${t}</option>`;
+    });
+
+    let mainPersonValue = district ? `${district} Main Persona` : "";
+    if (district === "Ballari") {
+      mainPersonValue = "Bellari Main Person";
+    }
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <title>${district || "District Details"}</title>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; margin: 20px; background: #f8fafc; color: #1e293b; }
+    .container { max-width: 450px; background: #fff; padding: 24px; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    h2 { color: #2b3a55; margin-top: 0; }
+    .field-group { margin-bottom: 16px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; color: #2b3a55; font-size: 0.9rem; }
+    input[type=text], select { width: 100%; padding: 8px 12px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; outline: none; }
+    input[type=text]:focus, select:focus { border-color: #2b3a55; box-shadow: 0 0 0 3px rgba(43, 58, 85, 0.12); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>${district || "District Details"}</h2>
+    <div class="field-group">
+      <label for="mainPerson">Main Person</label>
+      <input type="text" id="mainPerson" value="${mainPersonValue}" placeholder="Enter main person name">
+    </div>
+    <div class="field-group">
+      <label for="talukSelect">Taluk / Sub-District</label>
+      <select id="talukSelect">
+        ${talukOptions}
+      </select>
+    </div>
+  </div>
+</body>
+</html>`;
+  }
+
+  function openNewTab() {
+    const w = window.open('', '_blank');
+    if (w) { w.document.write(districtHTML(getDistrict())); w.document.close(); }
+  }
+
+  function openNewWindow() {
+    const w = window.open('', '_blank', 'width=500,height=400');
+    if (w) { w.document.write(districtHTML(getDistrict())); w.document.close(); }
+  }
+
+  let collectedData = {};
+
+  function collectFormData() {
+    return {
+      fullName: document.getElementById('fullName').value,
+      countrySelect: document.getElementById('countrySelect').value,
+      stateSelect: document.getElementById('stateSelect').value,
+      citySelect: document.getElementById('citySelect').value,
+      selectedDate: document.getElementById('calendarInput').value,
+      firstName: document.getElementById('firstName').value,
+      lastName: document.getElementById('lastName').value,
+      district: document.getElementById('district').value,
+      age: shadowRoot.getElementById('ageInput').value,
+      hobbies: document.getElementById('hobbies').selectedValue
+    };
+  }
+
+  function saveData() {
+    collectedData = collectFormData();
+    if (!collectedData.fullName) {
+      alert('Please enter your full name before saving.');
+      return;
+    }
+    alert('Data Saved Successfully!');
+    document.getElementById('downloadArea').style.display = 'block';
+  }
+
+  function downloadTXT() {
+    const text = JSON.stringify(collectedData, null, 2);
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'registration_summary.txt';
+    a.click();
+  }
+
+  function downloadXLSX() {
+    if (!window.XLSX) { alert('XLSX library not loaded'); return; }
+    const ws = XLSX.utils.json_to_sheet([collectedData]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Registration");
+    XLSX.writeFile(wb, "registration_summary.xlsx");
+  }
+</script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+import inspect
 import pytest_html
 from playwright.sync_api import sync_playwright
 from dotenv import load_dotenv
@@ -25,7 +26,6 @@ def page():
     with sync_playwright() as p:
         try:
             launch_options = {"headless": headless_mode}
-            # Launch browser based on config
             match browser_name:
                 case "chrome":
                     launch_options["channel"] = "chrome"
@@ -37,11 +37,10 @@ def page():
                     browser = p.chromium.launch(**launch_options)
                 case "firefox":
                     browser = p.firefox.launch(**launch_options)
-                case "webkit":   ### safari
+                case "webkit":
                     browser = p.webkit.launch(**launch_options)
                 case _:
                     raise ValueError(f"Unsupported browser: {browser_name}")
-            # Create browser context and page
             context = browser.new_context(record_video_dir=video_dir)
             page = context.new_page()
             page.goto(url)
@@ -50,42 +49,32 @@ def page():
             browser.close()
 
         except Exception as e:
-            msg = f"Error in page fixture while launching browser -  {browser_name} - setup "
-            raise RuntimeError(f"{msg}") from str(e)
+            msg = f"Error in page fixture while launching browser - {browser_name} - setup "
+            raise RuntimeError(msg) from e
+
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
-    print("outcome",outcome)
     report = outcome.get_result()
-    print("report", report)
-    print("item", item)
-    print("report.when", report.when)
     setattr(item, f"rep_{report.when}", report)
 
 
 @pytest.fixture(autouse=True)
-def screenshot_on_failure(request, page):
+def screenshot_on_failure(request):
+    if request.node and inspect.iscoroutinefunction(request.node.function):
+        yield
+        return
+
     yield
-    report = request.node.rep_call
-    print("request.node.rep_call->", report)
-    if report.failed:
-        # Create screenshot directory
-        screenshot_dir = os.path.join(os.getcwd(),"test-results","screenshots")
-        print("screenshot_dir", screenshot_dir)
+    report = getattr(request.node, "rep_call", None)
+    if report is not None and report.failed and "page" in request.fixturenames:
+        screenshot_dir = os.path.join(os.getcwd(), "test-results", "screenshots")
         os.makedirs(screenshot_dir, exist_ok=True)
-        # Create screenshot file name
-        test_name = request.node.name+fh.get_timestamp()
-        print("test_name", test_name)
-        screenshot_path = os.path.join(screenshot_dir,f"{test_name}.png")
-
-        # Capture screenshot and save to file
-        page.screenshot(path=screenshot_path,full_page=True)
-        # Attach screenshot to pytest-html report
+        test_name = request.node.name + fh.get_timestamp()
+        screenshot_path = os.path.join(screenshot_dir, f"{test_name}.png")
+        page = request.getfixturevalue("page")
+        page.screenshot(path=screenshot_path, full_page=True)
         report.extras.append(
-            pytest_html.extras.image(
-                screenshot_path
-            )
+            pytest_html.extras.image(screenshot_path)
         )
-
-
